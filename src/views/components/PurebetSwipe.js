@@ -18,6 +18,7 @@ const PurebetSwipe = () => {
 
 	const { connection } = useConnection();
 	const [usdcBalance, setUSDCBalance] = useState(0);
+	const [solBalance, setSolBalance] = useState(0);
 	const [stake, setStake] = useState(1);
 	const [ betTransactions, setBetTransactions ] = useState([]); 
 	const [ events, setEvents ] = useState([]);
@@ -50,6 +51,7 @@ const PurebetSwipe = () => {
 	useEffect(() => {
 		if (wallet.publicKey) {
 		  getUSDCBalance();
+		  getSolBalance()
 		}
 	  }, [wallet.publicKey, connection]);
 	
@@ -60,8 +62,12 @@ const PurebetSwipe = () => {
 		var usdcAcc = usdcAccRaw.value[0].pubkey;
 		var balRaw = await connection.getTokenAccountBalance(usdcAcc);
 		var bal = balRaw.value.uiAmount;
-		
 		setUSDCBalance(bal);
+	}
+
+	async function getSolBalance(){
+		const accInfo = await connection.getAccountInfo(wallet.publicKey);
+		setSolBalance(accInfo.lamports / solanaWeb3.LAMPORTS_PER_SOL);
 	}
 
 	useEffect(() => {
