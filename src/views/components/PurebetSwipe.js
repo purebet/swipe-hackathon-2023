@@ -63,11 +63,28 @@ const PurebetSwipe = () => {
 		var balRaw = await connection.getTokenAccountBalance(usdcAcc);
 		var bal = balRaw.value.uiAmount;
 		setUSDCBalance(bal);
+		setStake(Math.min(bal, stake));
 	}
 
 	async function getSolBalance(){
 		const accInfo = await connection.getAccountInfo(wallet.publicKey);
-		setSolBalance(accInfo.lamports / solanaWeb3.LAMPORTS_PER_SOL);
+		const sol = accInfo.lamports / solanaWeb3.LAMPORTS_PER_SOL;
+		setSolBalance(sol);
+
+		if (sol < 0.002){
+			setTimeout(()=> setBetDialog({
+				modal: (
+				<MessageDialog
+					open
+					title="Low SOL Balance"
+					text="You need more than 0.002 SOL balance in your wallet to bet. Please refill and try again."
+					confirmButtonText="OK"
+					onClose={()=>{ setBetDialog({modal: null}) }}
+					onConfirm={()=>{ setBetDialog({modal: null}) }}
+				/>
+				),
+			}));
+		}
 	}
 
 	useEffect(() => {
@@ -210,6 +227,11 @@ const PurebetSwipe = () => {
 
 	const noEventsForNow = ()=> { return wallet.publicKey && Array.isArray(events) && events.length === 0 }
 
+	const onStakeChanged = (event)=>{ 
+		const stake = parseFloat(event.target.value);
+		setStake(Math.min(usdcBalance, stake));
+	}
+
 	
     return (
 		<div>
@@ -232,7 +254,7 @@ const PurebetSwipe = () => {
 										placeholder="0.00"
 										style={{ width:"60px" }}
 										value={stake}
-										onChange={(event)=>{ setStake(event.target.value) }}
+										onChange={ onStakeChanged }
 									/>
 									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">USDC</Typography>
 								</>
@@ -247,21 +269,25 @@ const PurebetSwipe = () => {
 								{ noEventsForNow() ? 
 									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>UFC Events for betting will be coming soon. Please check back a bit later.</Typography> : 
 									<></>}
-								{events.map((eventInfo) =>
-									<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
-										onSwipe={(dir) => swiped(dir, eventInfo)} 
-										onCardLeftScreen={() => outOfFrame(eventInfo)}
-										preventSwipe={['up', 'down']}>
-											<FippableCard eventInfo={eventInfo} onFlipCard={setHomeOnTopCard} stake={stake}/>
-									</TinderCard>
-								)}
+								{ 	<div id='swipeCardStack' lowSOL={ solBalance < 0.002 ? 'true' : 'false'}>{
+										events.map((eventInfo) =>
+											<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
+												onSwipe={(dir) => swiped(dir, eventInfo)} 
+												onCardLeftScreen={() => outOfFrame(eventInfo)}
+												preventSwipe={['up', 'down']}>
+													<FippableCard eventInfo={eventInfo} onFlipCard={setHomeOnTopCard} stake={stake}/>
+											</TinderCard>)
+										}
+									</div>
+								}
 							</div>
 
 
 						</div>
 						<br/><br/>
 						{ noEventsForNow() ? <></> : 
-							<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>Swipe right to place bet, swipe left to skip</Typography>}
+							<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>
+								{solBalance < 0.002 ? "Please refill SOL to continue" : "Swipe right to place bet, swipe left to skip"}</Typography>}
 					</div>
 				</Grid>
 			</Grid>
