@@ -26,7 +26,7 @@ const WalletContextProvider = ({ children }) => {
     //quicknode hopefully works better
     //const endpoint = useMemo(() => "https://spring-frosty-snowflake.solana-mainnet.discover.quiknode.pro/5584f3ace79637af8f83a6f135554af9e0f0ffca/", [network]);
     
-    const endpoint = useMemo(() => "https://rpc.helius.xyz/?api-key=2f6391bc-b23c-43ff-aac4-a04fc3112397", [network]);
+    const endpoint = useMemo(() => "https://rpc.helius.xyz/?api-key=19b21c3a-cfc9-4163-b6b1-f5c8ee756771", [network]);
 //use this for production
     //const endpoint = useMemo(() => "https://solana-mainnet.g.alchemy.com/v2/GatLx4SVsTijZoDo9WJHKMos3lxr5jVX", [network]); //clusterApiUrl(network)
     //use this for testing

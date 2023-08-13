@@ -105,6 +105,7 @@ const PurebetSwipe = () => {
 	};
 	
 	const fetchEvents = async () => {
+
 		if (wallet.publicKey){
 			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
 			setEvents(eventData.data.combat.UFC.filter(event => event.moneyline));
@@ -166,7 +167,6 @@ const PurebetSwipe = () => {
 			});
 		});
 	};
-	
 
 	async function placeBet(id1, id2, side, userStake, userOdds) {
 
@@ -202,6 +202,8 @@ const PurebetSwipe = () => {
 		return txResult;
 	}
 
+	const noEventsForNow = ()=> { return wallet.publicKey && Array.isArray(events) && events.length === 0 }
+
 	
     return (
 		<div>
@@ -236,6 +238,9 @@ const PurebetSwipe = () => {
 						<br/><br/>
 						<div style={{ marginTop: '30px' }}>
 							<div className='swipeCardContainer'>
+								{ noEventsForNow() ? 
+									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>UFC Events for betting will be coming soon. Please check back a bit later.</Typography> : 
+									<></>}
 								{events.map((eventInfo) =>
 									<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
 										onSwipe={(dir) => swiped(dir, eventInfo)} 
@@ -245,9 +250,12 @@ const PurebetSwipe = () => {
 									</TinderCard>
 								)}
 							</div>
+
+
 						</div>
 						<br/><br/>
-						<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>Swipe right to place bet, swipe left to skip</Typography>
+						{ noEventsForNow() ? <></> : 
+							<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>Swipe right to place bet, swipe left to skip</Typography>}
 					</div>
 				</Grid>
 			</Grid>
