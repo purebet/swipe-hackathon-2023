@@ -26,7 +26,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
 						Odd: <Tag key="odd" label={ "" + eventInfo.moneyline.home.highestOdds } color="true" />
 						<br/><br/><br/>
-						<AppIconButton imgSrc="./img/flipForward.png" color="secondary" title={ "Flip to " + eventInfo.awayTeam } onClick={()=>flipHome(false)}/>
+						<AppIconButton imgSrc="./img/flipForward.png" color="secondary" title={ "Flip to " + eventInfo.awayTeam } onClick={()=>flipHome(false)} onTouchStart={()=>flipHome(false)}/>
 					</div>
 				</div>
 
@@ -38,7 +38,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
 						Odd: <Tag key="odd" label={ "" + eventInfo.moneyline.away.highestOdds } color="true" />
 						<br/><br/><br/>
-						<AppIconButton imgSrc="./img/flipBackward.png" color="secondary" title={ "Flip to " + eventInfo.homeTeam } onClick={()=>flipHome(true)}/>
+						<AppIconButton imgSrc="./img/flipBackward.png" color="secondary" title={ "Flip to " + eventInfo.homeTeam } onClick={()=>flipHome(true)}  onTouchStart={()=>flipHome(true)}/>
 					</div>
 				</div>
 
