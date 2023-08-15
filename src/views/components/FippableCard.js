@@ -21,7 +21,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
 					className="flip-card-front swipeCard">
 					<h3 style={{color: 'black', paddingTop: '15px'}}>{eventInfo.event}</h3>
-					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '30px'}}>
+					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '20px', paddingBottom: '10px'}}>
 						<h3 style={{color: 'black'}}>{eventInfo.homeTeam}</h3>
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
 						Odd: <Tag key="odd" label={ "" + eventInfo.moneyline.home.highestOdds } color="true" />
@@ -33,7 +33,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
 					className="flip-card-back swipeCard">
 					<h3 style={{color: 'black', paddingTop: '15px'}}>{eventInfo.event}</h3>
-					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '50px'}}>
+					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '20px', paddingBottom: '10px'}}>
 						<h3 style={{color: 'black'}}>{eventInfo.awayTeam}</h3>
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
 						Odd: <Tag key="odd" label={ "" + eventInfo.moneyline.away.highestOdds } color="true" />

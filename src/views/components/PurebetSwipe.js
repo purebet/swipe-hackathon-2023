@@ -43,8 +43,16 @@ const PurebetSwipe = () => {
 		}
 	}
 
+	//this is a temp fix. It deletes the event Its not a bad thing. 
+	//The scrolling still happens but is removed.
+	//We should try to find the root cause but I am lost
+	// const deleteCard = (delEv) => {
+	// 	setEvents(events.filter((event) => getPurebetId(event) !== getPurebetId(delEv)));
+	// }
+
 	const outOfFrame = (event) => {
 		console.log(eventStr(event) + ' left the screen!');
+		//deleteCard(event); //part of temp fix
 		setHomeOnTopCard(true);
 	}
 
@@ -230,7 +238,7 @@ const PurebetSwipe = () => {
 
 	const onStakeChanged = (event)=>{ 
 		const stake = parseFloat(event.target.value);
-		setStake(Math.min(usdcBalance, stake));
+		setStake(Math.min(Math.floor(usdcBalance*100)/100, stake));
 	}
 
 	
@@ -247,12 +255,16 @@ const PurebetSwipe = () => {
 						{ wallet.publicKey ? 
 							( 
 								<>
-									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {Math.round(usdcBalance*100)/100}</Typography>
+									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {Math.floor(usdcBalance*100)/100}</Typography>
 
 									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">Stake: </Typography>
 									<input
-										type="number"
-										placeholder="0.00"
+										type="number" 
+										// pattern="^\d*(\.\d{0,2})?$" 
+										// inputmode="text"
+										step="any"
+										min="1.01"
+										placeholder='10.00'
 										style={{ width:"60px" }}
 										value={stake}
 										onChange={ onStakeChanged }
@@ -273,8 +285,8 @@ const PurebetSwipe = () => {
 								{ 	<div id='swipeCardStack' lowSOL={ solBalance < 0.002 ? 'true' : 'false'}>{
 										events.map((eventInfo) =>
 											<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
-												onSwipe={(dir) => swiped(dir, eventInfo)} 
 												onCardLeftScreen={() => outOfFrame(eventInfo)}
+												onSwipe={(dir) => swiped(dir, eventInfo)} 
 												preventSwipe={['up', 'down']}>
 													<FippableCard eventInfo={eventInfo} onFlipCard={setHomeOnTopCard} stake={stake}/>
 											</TinderCard>)
