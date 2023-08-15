@@ -19,7 +19,7 @@ const PurebetSwipe = () => {
 	const { connection } = useConnection();
 	const [usdcBalance, setUSDCBalance] = useState(0);
 	const [solBalance, setSolBalance] = useState(0);
-	const [stake, setStake] = useState(1);
+	const [stake, setStake] = useState(10); //set default to 10 USDC
 	const [ betTransactions, setBetTransactions ] = useState([]); 
 	const [ events, setEvents ] = useState([]);
 	const [ homeOnTopCard, setHomeOnTopCard ] = useState(true);
@@ -130,8 +130,8 @@ const PurebetSwipe = () => {
 	const fetchEvents = async () => {
 
 		if (wallet.publicKey){
-			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
-			setEvents(eventData.data.combat.UFC.filter(event => event.moneyline));
+			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=baseball");
+			setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
 		}
 		else {
 			setEvents([]);
@@ -145,6 +145,7 @@ const PurebetSwipe = () => {
 		console.log('placing bet for ' + (homeOnTopCard ? event.homeTeam : event.awayTeam) + ' in event "' + eventStr(event) + '"');
 
 		if (!process.env.REACT_APP_PLACE_REAL_BET){
+			console.log("not in real betting mode")
 			return null;
 		}
 
@@ -241,14 +242,14 @@ const PurebetSwipe = () => {
 				</Grid>
 
 				<Grid item component="main">
-					<div style={{ height: 800, maxheight: 1200,  width: '95%', margin: 'auto' }}>
+					<div style={{ height: 800, maxheight: 1200,  width: '95%', margin: 'auto', overflow: "hidden"}}>
 
 						{ wallet.publicKey ? 
 							( 
 								<>
-									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {usdcBalance}</Typography>
+									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {Math.round(usdcBalance*100)/100}</Typography>
 
-									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">Stack: </Typography>
+									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">Stake: </Typography>
 									<input
 										type="number"
 										placeholder="0.00"
