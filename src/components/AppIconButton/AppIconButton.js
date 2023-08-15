@@ -30,15 +30,15 @@ function getValidMuiColor(color) {
  * @param {string} [icon] - name of Icon to render inside the IconButton
  * @param {string} [title] - optional title, when set the MUI IconButton component is wrapped with MUI Tooltip
  */
-const AppIconButton = ({ children, className, disabled, color, icon, title, ...restOfProps }) => {
+const AppIconButton = ({ children, className, disabled, color, icon, title, imgSrc, ...restOfProps }) => {
   const classes = useStyles();
   const classButton = clsx(classes[color], className);
   const colorButton = getValidMuiColor(color);
 
   const renderIcon = () => (
-    <IconButton className={classButton} color={colorButton} disabled={disabled} {...restOfProps}>
-      <AppIcon icon={icon} />
-      {children}
+    <IconButton className={classButton} color={colorButton} disabled={disabled} style={{ padding: 6 }} {...restOfProps}>
+    {imgSrc ? <img src={imgSrc} alt={title} style={{ width: 30, height: 30}} /> : <AppIcon icon={icon} />}
+    {children}
     </IconButton>
   );
 

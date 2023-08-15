@@ -18,7 +18,8 @@ const PurebetSwipe = () => {
 
 	const { connection } = useConnection();
 	const [usdcBalance, setUSDCBalance] = useState(0);
-	const [stake, setStake] = useState(1);
+	const [solBalance, setSolBalance] = useState(0);
+	const [stake, setStake] = useState(10); //set default to 10 USDC
 	const [ betTransactions, setBetTransactions ] = useState([]); 
 	const [ events, setEvents ] = useState([]);
 	const [ homeOnTopCard, setHomeOnTopCard ] = useState(true);
@@ -42,14 +43,23 @@ const PurebetSwipe = () => {
 		}
 	}
 
+	//this is a temp fix. It deletes the event Its not a bad thing. 
+	//The scrolling still happens but is removed.
+	//We should try to find the root cause but I am lost
+	// const deleteCard = (delEv) => {
+	// 	setEvents(events.filter((event) => getPurebetId(event) !== getPurebetId(delEv)));
+	// }
+
 	const outOfFrame = (event) => {
 		console.log(eventStr(event) + ' left the screen!');
+		//deleteCard(event); //part of temp fix
 		setHomeOnTopCard(true);
 	}
 
 	useEffect(() => {
 		if (wallet.publicKey) {
 		  getUSDCBalance();
+		  getSolBalance()
 		}
 	  }, [wallet.publicKey, connection]);
 	
@@ -60,8 +70,29 @@ const PurebetSwipe = () => {
 		var usdcAcc = usdcAccRaw.value[0].pubkey;
 		var balRaw = await connection.getTokenAccountBalance(usdcAcc);
 		var bal = balRaw.value.uiAmount;
-		
 		setUSDCBalance(bal);
+		setStake(Math.min(bal, stake));
+	}
+
+	async function getSolBalance(){
+		const accInfo = await connection.getAccountInfo(wallet.publicKey);
+		const sol = accInfo.lamports / solanaWeb3.LAMPORTS_PER_SOL;
+		setSolBalance(sol);
+
+		if (sol < 0.002){
+			setTimeout(()=> setBetDialog({
+				modal: (
+				<MessageDialog
+					open
+					title="Low SOL Balance"
+					text="You need more than 0.002 SOL balance in your wallet to bet. Please refill and try again."
+					confirmButtonText="OK"
+					onClose={()=>{ setBetDialog({modal: null}) }}
+					onConfirm={()=>{ setBetDialog({modal: null}) }}
+				/>
+				),
+			}));
+		}
 	}
 
 	useEffect(() => {
@@ -105,9 +136,10 @@ const PurebetSwipe = () => {
 	};
 	
 	const fetchEvents = async () => {
+
 		if (wallet.publicKey){
-			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
-			setEvents(eventData.data.combat.UFC.filter(event => event.moneyline));
+			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=baseball");
+			setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
 		}
 		else {
 			setEvents([]);
@@ -121,6 +153,7 @@ const PurebetSwipe = () => {
 		console.log('placing bet for ' + (homeOnTopCard ? event.homeTeam : event.awayTeam) + ' in event "' + eventStr(event) + '"');
 
 		if (!process.env.REACT_APP_PLACE_REAL_BET){
+			console.log("not in real betting mode")
 			return null;
 		}
 
@@ -166,7 +199,6 @@ const PurebetSwipe = () => {
 			});
 		});
 	};
-	
 
 	async function placeBet(id1, id2, side, userStake, userOdds) {
 
@@ -202,6 +234,13 @@ const PurebetSwipe = () => {
 		return txResult;
 	}
 
+	const noEventsForNow = ()=> { return wallet.publicKey && Array.isArray(events) && events.length === 0 }
+
+	const onStakeChanged = (event)=>{ 
+		const stake = parseFloat(event.target.value);
+		setStake(Math.min(Math.floor(usdcBalance*100)/100, stake));
+	}
+
 	
     return (
 		<div>
@@ -211,20 +250,24 @@ const PurebetSwipe = () => {
 				</Grid>
 
 				<Grid item component="main">
-					<div style={{ height: 800, maxheight: 1200,  width: '95%', margin: 'auto' }}>
+					<div style={{ height: 800, maxheight: 1200,  width: '95%', margin: 'auto', overflow: "hidden"}}>
 
 						{ wallet.publicKey ? 
 							( 
 								<>
-									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {usdcBalance}</Typography>
+									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {Math.floor(usdcBalance*100)/100}</Typography>
 
-									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">Stack: </Typography>
+									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">Stake: </Typography>
 									<input
-										type="number"
-										placeholder="0.00"
+										type="number" 
+										// pattern="^\d*(\.\d{0,2})?$" 
+										// inputmode="text"
+										step="any"
+										min="1.01"
+										placeholder='10.00'
 										style={{ width:"60px" }}
 										value={stake}
-										onChange={(event)=>{ setStake(event.target.value) }}
+										onChange={ onStakeChanged }
 									/>
 									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">USDC</Typography>
 								</>
@@ -236,18 +279,28 @@ const PurebetSwipe = () => {
 						<br/><br/>
 						<div style={{ marginTop: '30px' }}>
 							<div className='swipeCardContainer'>
-								{events.map((eventInfo) =>
-									<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
-										onSwipe={(dir) => swiped(dir, eventInfo)} 
-										onCardLeftScreen={() => outOfFrame(eventInfo)}
-										preventSwipe={['up', 'down']}>
-											<FippableCard eventInfo={eventInfo} onFlipCard={setHomeOnTopCard} stake={stake}/>
-									</TinderCard>
-								)}
+								{ noEventsForNow() ? 
+									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>UFC Events for betting will be coming soon. Please check back a bit later.</Typography> : 
+									<></>}
+								{ 	<div id='swipeCardStack' lowSOL={ solBalance < 0.002 ? 'true' : 'false'}>{
+										events.map((eventInfo) =>
+											<TinderCard className='swipe' key={ getPurebetId(eventInfo) } 
+												onCardLeftScreen={() => outOfFrame(eventInfo)}
+												onSwipe={(dir) => swiped(dir, eventInfo)} 
+												preventSwipe={['up', 'down']}>
+													<FippableCard eventInfo={eventInfo} onFlipCard={setHomeOnTopCard} stake={stake}/>
+											</TinderCard>)
+										}
+									</div>
+								}
 							</div>
+
+
 						</div>
 						<br/><br/>
-						<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>Swipe right to place bet, swipe left to skip</Typography>
+						{ noEventsForNow() ? <></> : 
+							<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>
+								{solBalance < 0.002 ? "Please refill SOL to continue" : "Swipe right to place bet, swipe left to skip"}</Typography>}
 					</div>
 				</Grid>
 			</Grid>
