@@ -4,8 +4,8 @@ import CommonDialog from './CommonDialog';
 /**
  * Shows generic "Confirmation" dialog
  */
-const ConfirmDialog = ({ title = 'Confirm?', confirmButtonText = 'Confirm', ...props }) => {
-  return <CommonDialog title={title} confirmButtonText={confirmButtonText} {...props} />;
+const ConfirmDialog = ({ title = 'Confirm?', confirmButtonText = 'Confirm', hideCancelButton = false, ...props }) => {
+  return <CommonDialog title={title} confirmButtonText={confirmButtonText} hideCancelButton={hideCancelButton} {...props} />;
 };
 
 ConfirmDialog.propTypes = PropTypesCommonDialog;
