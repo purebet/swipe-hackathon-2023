@@ -111,39 +111,78 @@ const PurebetSwipe = () => {
 
 
 	const confirmToPlaceBet = (event) => {
-		setBetDialog({
-			modal: (
-			<ConfirmationDialog
-				open
-				data={event}
-				title="Do you really want to place this bet?"
-				body={ 
-				<>
-					<div style={{textAlign: "center"}}>
-					for: <Tag key="for" label={homeOnTopCard ? event.homeTeam : event.awayTeam} color="primary" /><br/><br/>
-					stake: <Tag key="stake" label={"" + stake + " USDC"} color="warning" /><br/><br/>
-					odd: <Tag key="odd" label={ "" + (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds) } color="true" /><br/>
-					</div>
-				</>
-				}
-				text= "overridden by body"
-				confirmButtonText="Yes Place Bet"
-				onClose={()=>{ setBetDialog({modal: null}) }}
-				onConfirm={()=>{ handlePlaceBet(event) }}
-			/>
-			),
-		});
+		//gtg
+		{wallet.publicKey && solBalance > 0.002 ?
+			setBetDialog({
+				modal: (
+				<ConfirmationDialog
+					open
+					data={event}
+					title="Do you really want to place this bet?"
+					body={ 
+					<>
+						<div style={{textAlign: "center"}}>
+						for: <Tag key="for" label={homeOnTopCard ? event.homeTeam : event.awayTeam} color="primary" /><br/><br/>
+						stake: <Tag key="stake" label={"" + stake + " USDC"} color="warning" /><br/><br/>
+						odd: <Tag key="odd" label={ "" + (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds) } color="true" /><br/>
+						</div>
+					</>
+					}
+					text= "overridden by body"
+					confirmButtonText="Yes Place Bet"
+					onClose={()=>{ setBetDialog({modal: null}) }}
+					onConfirm={()=>{ handlePlaceBet(event) }}
+					className="modal" // Apply the CSS class here
+				/>
+				),
+			})
+			: 
+			(
+				!wallet.publicKey ?
+				//no wallet connected
+				setBetDialog({
+					modal: (
+						<ConfirmationDialog
+							open
+							title="No wallet connected"
+							text= "Connect a Solana wallet to place this"
+							confirmButtonText="OK"
+							hideCancelButton={true}
+							onClose={()=>{ setBetDialog({modal: null}) }}
+							onConfirm={()=>{ setBetDialog({modal: null}) }}
+							className="modal" // Apply the CSS class here
+						/>
+						),
+					})
+				:
+				//sol bal is low
+				setBetDialog({
+					modal: (
+						<ConfirmationDialog
+							open
+							title="SOL balance low"
+							text= "Your SOL balance is low. 0.002 SOL is required to place a bet. This is refunded once the match is over. Please add SOL to your wallet."
+							confirmButtonText="OK"
+							hideCancelButton={true}
+							// onClose={()=>{ setBetDialog({modal: null}) }}
+							onConfirm={()=>{ setBetDialog({modal: null}) }}
+							className="modal" // Apply the CSS class here
+						/>
+						),
+					})
+			)
+		}
 	};
 	
 	const fetchEvents = async () => {
 
-		if (wallet.publicKey){
+		// if (wallet.publicKey){
 			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=baseball");
 			setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
-		}
-		else {
-			setEvents([]);
-		}
+		// }
+		// else {
+		// 	setEvents([]);
+		// }
 		setHomeOnTopCard(true);
 		setEventToBet(null);
 	};
@@ -234,7 +273,7 @@ const PurebetSwipe = () => {
 		return txResult;
 	}
 
-	const noEventsForNow = ()=> { return wallet.publicKey && Array.isArray(events) && events.length === 0 }
+	const noEventsForNow = ()=> { return Array.isArray(events) && events.length === 0 }
 
 	const onStakeChanged = (event)=>{ 
 		const stake = parseFloat(event.target.value);
@@ -252,7 +291,8 @@ const PurebetSwipe = () => {
 				<Grid item component="main">
 					<div style={{ height: 800, maxheight: 1200,  width: '95%', margin: 'auto', overflow: "hidden"}}>
 
-						{ wallet.publicKey ? 
+						{ 
+						// wallet.publicKey ? 
 							( 
 								<>
 									<Typography sx={{ fontSize: '1rem', padding: 1 }}>Wallet USDC balance: {Math.floor(usdcBalance*100)/100}</Typography>
@@ -272,8 +312,8 @@ const PurebetSwipe = () => {
 									<Typography sx={{ fontSize: '1rem', padding: 1 }} display="inline">USDC</Typography>
 								</>
 							)
-							 : 
-							<h3>Please connect your wallet to start</h3>
+							//  : 
+							// <h3>Please connect your wallet to start</h3>
 						}
 						
 						<br/><br/>
