@@ -177,8 +177,8 @@ const PurebetSwipe = () => {
 	const fetchEvents = async () => {
 
 		// if (wallet.publicKey){
-			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=baseball");
-			setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
+			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
+			setEvents(eventData.data.combat["UFC"].filter(event => event.moneyline));
 		// }
 		// else {
 		// 	setEvents([]);
