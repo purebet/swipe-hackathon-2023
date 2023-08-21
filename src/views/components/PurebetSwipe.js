@@ -124,7 +124,7 @@ const PurebetSwipe = () => {
 						<div style={{textAlign: "center"}}>
 						for: <Tag key="for" label={homeOnTopCard ? event.homeTeam : event.awayTeam} color="primary" /><br/><br/>
 						stake: <Tag key="stake" label={"" + stake + " USDC"} color="warning" /><br/><br/>
-						odd: <Tag key="odd" label={ "" + (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds) } color="true" /><br/>
+						odds: <Tag key="odd" label={ "" + (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds) } color="true" /><br/>
 						</div>
 					</>
 					}
