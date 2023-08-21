@@ -178,7 +178,7 @@ const PurebetSwipe = () => {
 
 		// if (wallet.publicKey){
 			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
-			setEvents(eventData.data.baseball["UFC"].filter(event => event.moneyline));
+			setEvents(eventData.data.combat["UFC"].filter(event => event.moneyline));
 		// }
 		// else {
 		// 	setEvents([]);
