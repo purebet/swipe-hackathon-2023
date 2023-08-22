@@ -30,6 +30,7 @@ function ResponsiveAppBar() {
         <AppBar position="fixed" className={classes.background}>
             <Container maxWidth="false">
                 <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
+                    <a href="https://exchange.purebet.io">
                     <Box
                         component="img"
                         sx={{
@@ -39,7 +40,9 @@ function ResponsiveAppBar() {
                         alt="logo"
                         src={true ? '/img/logo_dark.png' : '/img/logo_light.png'}
                     />
+                    </a>
 
+                    <a href="https://exchange.purebet.io">
                     <Box
                         component="img"
                         sx={{
@@ -49,6 +52,7 @@ function ResponsiveAppBar() {
                         alt="logo"
                         src={true ? '/img/logo_dark.png' : '/img/logo_light.png'}
                     />
+                    </a>
 
                     <Box sx={{ flexGrow: 0 }}>
                         <WalletMultiButton className={classes.wallet} />
