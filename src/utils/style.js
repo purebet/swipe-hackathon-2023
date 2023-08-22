@@ -52,12 +52,17 @@ export const dialogStyles = (theme) => ({
     top: theme.spacing(0.5),
   },
   paper: {
-    [theme.breakpoints.up('md')]: {
-      minWidth: theme.breakpoints.values.md / 2,
-    },
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.up('xs')]: {
       minWidth: theme.breakpoints.values.sm / 2,
     },
+    [theme.breakpoints.down('xs')]: {
+      minWidth: theme.breakpoints.values.xs / 2,
+    },
+    position: 'fixed',
+    top: 50,
+    left: '5vw',
+    width: '80vw',
+    maxWidth: 400
   },
   formControl: {
     marginTop: theme.spacing(1),
