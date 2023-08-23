@@ -177,8 +177,8 @@ const PurebetSwipe = () => {
 	const fetchEvents = async () => {
 
 		// if (wallet.publicKey){
-			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
-			setEvents(eventData.data.combat["UFC"].filter(event => event.moneyline));
+			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=baseball");
+			setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
 		// }
 		// else {
 		// 	setEvents([]);
@@ -320,7 +320,7 @@ const PurebetSwipe = () => {
 						<div style={{ marginTop: '30px' }}>
 							<div className='swipeCardContainer'>
 								{ noEventsForNow() ? 
-									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>UFC Events for betting will be coming soon. Please check back a bit later.</Typography> : 
+									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>MLB Events for betting will be coming soon. Please check back a bit later.</Typography> : 
 									<></>}
 								{ 	<div id='swipeCardStack' lowSOL={ solBalance < 0.002 ? 'true' : 'false'}>{
 										events.map((eventInfo) =>
