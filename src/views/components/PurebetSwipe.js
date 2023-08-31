@@ -7,6 +7,8 @@ import FippableCard from './FippableCard';
 
 import { MessageDialog, ConfirmationDialog } from '../../components/dialogs';
 import { Tag } from '../../components/Tag';
+import * as buffer from "buffer";
+window.Buffer = buffer.Buffer;
 
 
 const PurebetSwipe = () => {
@@ -191,7 +193,7 @@ const PurebetSwipe = () => {
 		setBetDialog({modal: null})
 		console.log('placing bet for ' + (homeOnTopCard ? event.homeTeam : event.awayTeam) + ' in event "' + eventStr(event) + '"');
 
-		if (!process.env.REACT_APP_PLACE_REAL_BET){
+		if (!process.env.REACT_APP_PLACE_REAL_BET || process.env.REACT_APP_PLACE_REAL_BET.toLowerCase()!=='true'){
 			console.log("not in real betting mode")
 			return null;
 		}
