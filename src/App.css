@@ -94,11 +94,13 @@ body{
   }
   
   .flip-card-front {
+    user-select: none;
     background-color: #bbb;
     color: black;
   }
   
   .flip-card-back {
+    user-select: none;
     background-color: #81b9df;
     color: white;
     transform: rotateY(180deg);

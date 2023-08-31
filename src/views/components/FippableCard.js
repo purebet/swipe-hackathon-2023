@@ -18,10 +18,11 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 
 			<div className= { "flip-card-inner " + (showFront? "flip-card-inner-front" : "flip-card-inner-back") }>
 
-				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
+				<div style={{ backgroundImage: 'url(./img/sports/bg-baseball.png)', backgroundSize: '100px'}} 
 					className="flip-card-front swipeCard">
-					<h3 style={{color: 'black', paddingTop: '15px'}}>{eventInfo.event}</h3>
-					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '20px', paddingBottom: '10px'}}>
+					<h3 style={{color: 'black', paddingTop: '15px', marginBottom: '1px'}}>{eventInfo.event}</h3>
+					<div style={{color: 'black', paddingTop: '5px'}}>{new Date(eventInfo.startDate*1000).toLocaleString()}</div>
+					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '5px', paddingBottom: '10px'}}>
 						<h3 style={{color: 'black'}}>{eventInfo.homeTeam}</h3>
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
 						Odd: <Tag key="odd" label={ "" + eventInfo.moneyline.home.highestOdds } color="true" />
@@ -30,9 +31,10 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 					</div>
 				</div>
 
-				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
+				<div style={{ backgroundImage: 'url(./img/sports/bg-baseball.png)', backgroundSize: '100px'}} 
 					className="flip-card-back swipeCard">
-					<h3 style={{color: 'black', paddingTop: '15px'}}>{eventInfo.event}</h3>
+					<h3 style={{color: 'black', paddingTop: '15px', marginBottom: '1px'}}>{eventInfo.event}</h3>
+					<div style={{color: 'black', paddingTop: '5px'}}>{new Date(eventInfo.startDate*1000).toLocaleString()}</div>
 					<div style={{ justifyContent: 'center', alignItems: 'center', paddingTop: '20px', paddingBottom: '10px'}}>
 						<h3 style={{color: 'black'}}>{eventInfo.awayTeam}</h3>
 						Stake: <Tag key="stake" label={ ""+stake + " USDC" } color="false" /><br/>
