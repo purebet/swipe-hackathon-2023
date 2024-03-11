@@ -18,7 +18,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 
 			<div className= { "flip-card-inner " + (showFront? "flip-card-inner-front" : "flip-card-inner-back") }>
 
-				<div style={{ backgroundImage: 'url(./img/sports/bg-baseball.png)', backgroundSize: '100px'}} 
+				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
 					className="flip-card-front swipeCard">
 					<h3 style={{color: 'black', paddingTop: '15px', marginBottom: '1px'}}>{eventInfo.event}</h3>
 					<div style={{color: 'black', paddingTop: '5px'}}>{new Date(eventInfo.startDate*1000).toLocaleString()}</div>
@@ -31,7 +31,7 @@ const FippableCard = ( { eventInfo, onFlipCard, stake } ) => {
 					</div>
 				</div>
 
-				<div style={{ backgroundImage: 'url(./img/sports/bg-baseball.png)', backgroundSize: '100px'}} 
+				<div style={{ backgroundImage: 'url(./img/sports/bg-combat.png)', backgroundSize: '100px'}} 
 					className="flip-card-back swipeCard">
 					<h3 style={{color: 'black', paddingTop: '15px', marginBottom: '1px'}}>{eventInfo.event}</h3>
 					<div style={{color: 'black', paddingTop: '5px'}}>{new Date(eventInfo.startDate*1000).toLocaleString()}</div>
