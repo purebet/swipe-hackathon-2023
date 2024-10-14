@@ -10,6 +10,94 @@ import { Tag } from '../../components/Tag';
 import * as buffer from "buffer";
 window.Buffer = buffer.Buffer;
 
+var solanaWeb3 = require('@solana/web3.js');
+var programID = new solanaWeb3.PublicKey("9uReBEtnYGYf1oUe4KGSt6kQhsqGE74i17NzRNEDLutn");
+var pool = new solanaWeb3.PublicKey("3SdgUSptYW5NM4SFUYfJwV3awTG7hYJnc1T1yL519mEZ");
+var tokenProgram = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+function numToBytes(num, bytes){
+    let output = [0, 0, 0, 0, 0, 0, 0, 0];
+    for(let pow = 7; pow >= 0; pow--){
+        output[pow] = Math.floor(num / 256**pow);
+        num = num % 256**pow;
+    }
+    return output.slice(0, bytes);
+}
+
+function nameToBytes(name){
+    let words = name.split(" ");
+    if(words.length == 0){ //no name, not a player props bet
+        return [0, 0, 0, 0];
+    }
+    else if(words.length == 1){//someone only has a first name
+        return [name.charCodeAt(0), 0, 0, 0]
+    }
+    else{
+        if(words.length > 2){ //last name with multiple words
+            words[1] = words.slice(1).join(" ");
+        }
+        let output = [words[0].charCodeAt(0), words[1].charCodeAt(0), words[1].charCodeAt(1)]
+        if(words[1].length == 2){ //2 letter last name
+            output.push(0);
+            return output;
+        }
+        else{
+            output.push(words[1].charCodeAt(2));
+            return output;
+        }
+    }
+}
+function stringToBytes(str){
+    let output = [];
+    for(let i = 0; i < str.length; i++){
+        output.push(str.charCodeAt(i));
+    }
+    return new Uint8Array(output);
+}
+
+// function convertSide(sideName){
+//     console.log(sideName, typeof sideName)
+//     sideName = typeof sideName === "string" ? sideName.toLowerCase(): sideName;
+// 	if ( sideName == 0) {
+// 		return 0;
+// 	} else if (sideName == 1 || sideName.includes("away") || sideName == 'lay' || sideName.substring(0, 5) == 'under') {
+// 		return 1;
+// 	}
+// 	return -1;
+// }
+
+function instrData(idObj, betInfo){
+    let {userStake, side, odds} = betInfo;
+    //userStake and side need some preprocessing before 
+    //betInfo contains userStake, side, odds, isLay
+    let data = [];
+    let ids = [
+        {name: "sport", bytes: 1}, 
+        {name: "league", bytes: 4}, 
+        {name: "event", bytes: 8},
+        {name: "period", bytes: 1},
+        {name: "mkt", bytes: 2}
+    ];
+    for(let i = 0; i < ids.length; i++){
+        let value = idObj[ids[i].name];
+        data = data.concat(numToBytes(value, ids[i].bytes));
+    }
+    data = data.concat(nameToBytes(idObj.player));
+    let stake0, stake1;
+    if(side == 0){
+        stake0 = numToBytes(userStake * 1000000);
+        stake1 = numToBytes(Math.round(userStake * (odds - 1) * 1000000));
+    }
+    else{
+        stake0 = numToBytes(Math.round(userStake * (odds - 1) * 1000000));
+        stake1 = numToBytes(userStake * 1000000);
+    }
+    data = data.concat(stake0).concat(stake1);
+    data.push(side);
+    data.push(1); //to aggregate is always true when betting through site
+    return data;
+}
+
 
 const PurebetSwipe = () => {
 
@@ -29,9 +117,9 @@ const PurebetSwipe = () => {
 
 	const [ betDialog, setBetDialog ] = useState({ modal: null });
 
-	const eventStr = event => { return event.event + " with id1=" + event.moneyline.id1 + " id2=" + event.moneyline.id2 ; };
+	const eventStr = event => { return event.event};
 
-	const getPurebetId = (ev) => { return (ev.moneyline.id1 * 256 + ev.moneyline.id2) };
+	const getPurebetId = (ev) => { return (ev.moneyline.event) };
 
 	const getEvent = (purebetId) => { return events.find(ev => getPurebetId(ev) === purebetId) };
 
@@ -179,9 +267,10 @@ const PurebetSwipe = () => {
 	const fetchEvents = async () => {
 
 		// if (wallet.publicKey){
-			let eventData = await axios.get("https://api.purebet.io/pbapi?sport=combat");
-			//setEvents(eventData.data.baseball["Major League Baseball"].filter(event => event.moneyline));
-			setEvents(eventData.data.combat.UFC.filter(event => event.moneyline));
+			let eventData = await axios.get("https://script.google.com/macros/s/AKfycbzOHT0zHPAt9m8qO4e65XBCOgCyvL5UlVEN6CpRwVziO0kEDo0OmQskdtWCYsbW2J1uUg/exec?url=http://3.97.10.72/events?sport=americanfootball");
+			console.log(eventData.data.americanfootball["National Football League"])
+			setEvents(eventData.data.americanfootball["National Football League"].sort((a,b)=>(b.startTime-a.startTime)));
+			// setEvents(eventData.data.baseball.MLB.filter(event => event.moneyline));
 		// }
 		// else {
 		// 	setEvents([]);
@@ -190,7 +279,7 @@ const PurebetSwipe = () => {
 		setEventToBet(null);
 	};
 
-	const handlePlaceBet = (event) => {
+	const handlePlaceBet = async (event) => {
 		setBetDialog({modal: null})
 		console.log('placing bet for ' + (homeOnTopCard ? event.homeTeam : event.awayTeam) + ' in event "' + eventStr(event) + '"');
 
@@ -198,13 +287,55 @@ const PurebetSwipe = () => {
 			console.log("not in real betting mode")
 			return null;
 		}
-
+		console.log(event)
+		let idObj = {
+			sport: event.moneyline.sportId,
+			league: event.moneyline.league,
+			event: event.moneyline.event,
+			period: event.moneyline.period,
+			mkt: event.moneyline.mkt,
+			player: ""
+		}
+		console.log("is home card on top?", homeOnTopCard, "odds wwanted", (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds))
+		let betInfo = {
+			userStake: stake,
+			side: Number(!Boolean(homeOnTopCard)),
+			odds: (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds),
+			isLay: false
+		}
+		var mintStr = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
+		let payload = {
+			"jsonrpc": "2.0",
+			"id": Math.round(Math.random() * 100),
+			"method": "getTokenAccountsByOwner",
+			"params": [
+				 wallet.publicKey.toBase58(),
+				 {
+					  "mint": mintStr
+				 },
+				 {
+					  "encoding": "jsonParsed"
+				 }
+			]
+		}
+		let resp = await axios.post(process.env.REACT_APP_WALLET_ADAPTER_NETWORK, payload);
+      let usdcATA = new solanaWeb3.PublicKey(resp?.data?.result?.value[0]?.pubkey)
+		let addrs = {
+			bettor: wallet.publicKey,
+			usdcATA: usdcATA
+		}
+		let fixtures = {
+			selectionName: (homeOnTopCard ? event.homeTeam : event.awayTeam),
+			eventName: event.event
+		}
 		placeBet(
-			event.moneyline.id1,
-			event.moneyline.id2,
-			(homeOnTopCard ? "home" : "away"),
-			stake,
-			(homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds)
+			idObj, betInfo, addrs, fixtures, connection,
+			/// old
+			// event.moneyline.id1,
+			// event.moneyline.id2,
+			// (homeOnTopCard ? "home" : "away"),
+			// stake,
+			// (homeOnTopCard ? event.moneyline.home.highestOdds : event.moneyline.away.highestOdds)
 		)
 		.then((result) => {
 			console.log(result);
@@ -242,19 +373,49 @@ const PurebetSwipe = () => {
 		});
 	};
 
-	async function placeBet(id1, id2, side, userStake, userOdds) {
+	async function placeBet(idObj, betInfo, addrs, fixtures, connection) {
 
-		var wireRaw = await axios.get("https://api.purebet.io/bets/betBuilder" + 
-			"?id1=" + id1 + 
-			"&id2=" + id2 + 
-			"&side=" + side + 
-			"&stake=" + userStake + 
-			"&odds=" + userOdds + 
-			"&bettorAddr=" + wallet.publicKey.toBase58()
-		);
-		var wire = wireRaw.data.body;
-		var betAccs = wireRaw.data.betAccs;
-		var transaction = solanaWeb3.Transaction.from(wire);
+		let rentExemptVal = 1000000000 * 0.0018792;
+		let seed = 'purebetv2' + Math.random() * 1000000000000;
+		let newAcc = await solanaWeb3.PublicKey.createWithSeed(addrs.bettor, seed, programID);
+		let instr = solanaWeb3.SystemProgram.createAccountWithSeed({
+			 fromPubkey: addrs.bettor,
+			 basePubkey: addrs.bettor,
+			 seed: seed,
+			 newAccountPubkey: newAcc,
+			 lamports: rentExemptVal,
+			 space: 142,
+			 programId: programID,
+		});
+		
+		let betInstr = new solanaWeb3.TransactionInstruction({
+			 keys: [
+				  {pubkey: newAcc, isSigner: false, isWritable: true },
+				  {pubkey: tokenProgram, isSigner: false, isWritable: false},
+				  {pubkey: addrs.usdcATA, isSigner: false, isWritable: true },
+				  {pubkey: pool, isSigner: false, isWritable: true},
+				  {pubkey: addrs.bettor, isSigner: true, isWritable: true }, //the bettor is guaranteed to be paying the usdc if this is running
+				  {pubkey: addrs.bettor, isSigner: true, isWritable: true },
+				  {pubkey: addrs.bettor, isSigner: true, isWritable: true }, //if this is running, the bettor is guaranteed to be the rent exemption payer
+			 ],
+			 programId: programID,
+			 data: new Uint8Array(instrData(idObj, betInfo)),
+		});
+  
+		let memo = new solanaWeb3.TransactionInstruction({
+			 keys: [{ pubkey: addrs.bettor, isSigner: true, isWritable: true }],
+			 data: stringToBytes(`{"bet": ${betInfo.userStake}, "at": ${betInfo.odds}, "on": "${fixtures.selectionName}", "in": "${fixtures.eventName}"}`),
+			 programId: new solanaWeb3.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+		});
+  
+		
+		let transaction = new solanaWeb3.Transaction();
+		transaction.add(instr);
+		transaction.add(betInstr);
+		transaction.add(memo);
+		transaction.feePayer = addrs.bettor;
+		let blockInfo = await connection.getLatestBlockhash(); 
+		transaction.recentBlockhash = blockInfo.blockhash;
 		
 		let signature = null;
 		try {
@@ -271,7 +432,7 @@ const PurebetSwipe = () => {
 			return { error }
 		}
 		
-		const txResult = { signature, betAccs };
+		const txResult = { signature };
 		setBetTransactions([...betTransactions, txResult]);
 		return txResult;
 	}
@@ -323,7 +484,7 @@ const PurebetSwipe = () => {
 						<div style={{ marginTop: '30px' }}>
 							<div className='swipeCardContainer'>
 								{ noEventsForNow() ? 
-									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>UFC Events for betting will be coming soon. Please check back a bit later.</Typography> : 
+									<Typography sx={{ fontSize: '0.8rem', padding: 1 }}>NFL Events for betting will be coming soon. Please check back a bit later.</Typography> : 
 									<></>}
 								{ 	<div id='swipeCardStack' lowSOL={ solBalance < 0.002 ? 'true' : 'false'}>{
 										events.map((eventInfo) =>
